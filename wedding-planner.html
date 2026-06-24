@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wedding Planner — Agentic Workflow</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 780px; margin: 0 auto; }
+
+  .hero { text-align: center; margin-bottom: 2rem; }
+  .hero h1 { font-size: 28px; font-weight: 500; letter-spacing: -0.5px; color: #1a1a18; }
+  .hero p { font-size: 15px; color: #666; margin-top: 6px; }
+
+  .card { background: #fff; border: 0.5px solid #e0dfd8; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
+  .section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #999; margin-bottom: 10px; }
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .config-field label { font-size: 12px; color: #666; display: block; margin-bottom: 4px; }
+  .config-field input { width: 100%; font-size: 14px; padding: 7px 10px; border: 0.5px solid #ddd; border-radius: 7px; font-family: inherit; }
+  .config-field input:focus { outline: none; border-color: #7F77DD; box-shadow: 0 0 0 3px rgba(127,119,221,0.12); }
+  .divider { border: none; border-top: 0.5px solid #e8e7e2; margin: 1rem 0; }
+
+  .agents-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .agent-card { background: #fff; border: 0.5px solid #e0dfd8; border-radius: 12px; padding: 1rem; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; }
+  .agent-card:hover { border-color: #b0aae8; }
+  .agent-card.active { border-color: #7F77DD; background: #EEEDFE; }
+  .agent-icon { font-size: 22px; margin-bottom: 8px; color: #999; }
+  .agent-card.active .agent-icon { color: #534AB7; }
+  .agent-name { font-size: 13px; font-weight: 500; }
+  .agent-desc { font-size: 12px; color: #888; margin-top: 3px; line-height: 1.4; }
+  .agent-status { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; margin-top: 8px; padding: 2px 9px; border-radius: 20px; background: #f0efe9; color: #999; }
+  .agent-status.running { background: #EEEDFE; color: #534AB7; }
+  .agent-status.done { background: #EAF3DE; color: #3B6D11; }
+  .agent-status.error { background: #FCEBEB; color: #A32D2D; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
+  .dot.pulse { animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .run-btn { width: 100%; padding: 11px; font-size: 15px; font-weight: 500; background: #534AB7; color: #fff; border: none; border-radius: 9px; cursor: pointer; transition: opacity 0.15s; }
+  .run-btn:hover { opacity: 0.9; }
+  .run-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .progress-bar { height: 3px; background: #e8e7e2; border-radius: 2px; margin-bottom: 1.5rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: #534AB7; border-radius: 2px; transition: width 0.4s ease; width: 0%; }
+
+  .results-area { display: flex; flex-direction: column; gap: 12px; }
+  .result-card { background: #fff; border: 0.5px solid #e0dfd8; border-radius: 12px; overflow: hidden; }
+  .result-header { display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 0.5px solid #e8e7e2; cursor: pointer; }
+  .result-header-icon { font-size: 17px; color: #534AB7; }
+  .result-title { font-size: 14px; font-weight: 500; flex: 1; }
+  .result-toggle { font-size: 14px; color: #bbb; transition: transform 0.2s; }
+  .result-toggle.open { transform: rotate(180deg); }
+  .result-body { padding: 16px; font-size: 13px; line-height: 1.7; display: none; }
+  .result-body.open { display: block; }
+
+  .rec-item { background: #f8f7f3; border-radius: 9px; padding: 11px 13px; margin-bottom: 9px; }
+  .rec-item:last-child { margin-bottom: 0; }
+  .rec-item-name { font-weight: 500; font-size: 14px; }
+  .rec-item-detail { font-size: 12px; color: #666; margin-top: 3px; }
+  .rec-item-note { font-size: 12px; color: #888; margin-top: 5px; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 20px; margin-top: 5px; margin-right: 4px; }
+  .tag-green { background: #EAF3DE; color: #3B6D11; }
+  .tag-amber { background: #FAEEDA; color: #854F0B; }
+  .tag-purple { background: #EEEDFE; color: #534AB7; }
+  .tag-coral { background: #FAECE7; color: #993C1D; }
+  .tag-blue { background: #E6F1FB; color: #185FA5; }
+  .tag-teal { background: #E1F5EE; color: #0F6E56; }
+
+  .phase-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: #888; margin: 12px 0 6px; }
+  .checklist-item { display: flex; align-items: flex-start; gap: 9px; padding: 7px 0; border-bottom: 0.5px solid #eee; font-size: 13px; }
+  .checklist-item:last-child { border-bottom: none; }
+  .ci-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .ci-dot.high { background: #534AB7; }
+  .ci-dot.medium { background: #EF9F27; }
+  .ci-dot.low { background: #ccc; }
+  .ci-text { flex: 1; }
+  .ci-sub { font-size: 11px; color: #999; margin-top: 2px; }
+
+  .error-box { background: #FCEBEB; color: #A32D2D; font-size: 12px; padding: 10px 13px; border-radius: 8px; }
+
+  @media (max-width: 560px) {
+    .config-grid { grid-template-columns: 1fr; }
+    .agents-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="hero">
+    <h1>💍 Wedding planner</h1>
+    <p>AI agents search venues, catering, officiants & more — tailored to your budget</p>
+  </div>
+
+  <div class="card">
+    <div class="section-label">Wedding details</div>
+    <div class="config-grid">
+      <div class="config-field">
+        <label>Search area</label>
+        <input type="text" id="city" value="Reno, NV — Tahoe, Carson Valley, Truckee (no Virginia City)" />
+      </div>
+      <div class="config-field">
+        <label>Guest count</label>
+        <input type="number" id="guests" value="140" min="50" max="500" />
+      </div>
+      <div class="config-field">
+        <label>Total budget</label>
+        <input type="text" id="budget" value="$35,000" />
+      </div>
+      <div class="config-field">
+        <label>Preferred dates</label>
+        <input type="text" id="season" value="May–June 1st week or Late Aug–Sept 2027" />
+      </div>
+    </div>
+    <hr class="divider" />
+    <div class="section-label">Select agents to run</div>
+    <div class="agents-grid" id="agentsGrid">
+      <div class="agent-card active" data-agent="venue" onclick="toggleAgent(this)">
+        <div class="agent-icon">🏛️</div>
+        <div class="agent-name">Venue finder</div>
+        <div class="agent-desc">120–160 guests, cleanup policy, budget fit</div>
+        <div class="agent-status" id="status-venue"><div class="dot"></div> Ready</div>
+      </div>
+      <div class="agent-card active" data-agent="catering" onclick="toggleAgent(this)">
+        <div class="agent-icon">🍽️</div>
+        <div class="agent-name">Catering</div>
+        <div class="agent-desc">Full service, buffet & cocktail options</div>
+        <div class="agent-status" id="status-catering"><div class="dot"></div> Ready</div>
+      </div>
+      <div class="agent-card active" data-agent="officiant" onclick="toggleAgent(this)">
+        <div class="agent-icon">💒</div>
+        <div class="agent-name">Officiant</div>
+        <div class="agent-desc">Ministers, celebrants & civil options</div>
+        <div class="agent-status" id="status-officiant"><div class="dot"></div> Ready</div>
+      </div>
+      <div class="agent-card active" data-agent="photography" onclick="toggleAgent(this)">
+        <div class="agent-icon">📷</div>
+        <div class="agent-name">Photography</div>
+        <div class="agent-desc">Photographers & videographers</div>
+        <div class="agent-status" id="status-photography"><div class="dot"></div> Ready</div>
+      </div>
+      <div class="agent-card active" data-agent="music" onclick="toggleAgent(this)">
+        <div class="agent-icon">🎵</div>
+        <div class="agent-name">Music & DJ</div>
+        <div class="agent-desc">Live bands, DJs & ceremony musicians</div>
+        <div class="agent-status" id="status-music"><div class="dot"></div> Ready</div>
+      </div>
+      <div class="agent-card active" data-agent="checklist" onclick="toggleAgent(this)">
+        <div class="agent-icon">✅</div>
+        <div class="agent-name">Master checklist</div>
+        <div class="agent-desc">Prioritized timeline from all agents</div>
+        <div class="agent-status" id="status-checklist"><div class="dot"></div> Ready</div>
+      </div>
+    </div>
+    <button class="run-btn" id="runBtn" onclick="runAgents()">✨ Run all agents</button>
+  </div>
+
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="results-area" id="resultsArea"></div>
+
+</div>
+<script>
+const AGENTS = [
+  { id: 'venue', label: 'Venue finder', icon: '🏛️' },
+  { id: 'catering', label: 'Catering', icon: '🍽️' },
+  { id: 'officiant', label: 'Officiant', icon: '💒' },
+  { id: 'photography', label: 'Photography', icon: '📷' },
+  { id: 'music', label: 'Music & DJ', icon: '🎵' },
+  { id: 'checklist', label: 'Master checklist', icon: '✅' },
+];
+
+let activeAgents = new Set(['venue','catering','officiant','photography','music','checklist']);
+
+function toggleAgent(el) {
+  const id = el.dataset.agent;
+  if (activeAgents.has(id)) { activeAgents.delete(id); el.classList.remove('active'); }
+  else { activeAgents.add(id); el.classList.add('active'); }
+}
+
+function setStatus(id, state, text) {
+  const el = document.getElementById('status-' + id);
+  if (!el) return;
+  el.className = 'agent-status ' + state;
+  el.innerHTML = `<div class="dot ${state==='running'?'pulse':''}"></div> ${text}`;
+}
+
+function toggleResult(id) {
+  document.getElementById('rb-' + id)?.classList.toggle('open');
+  document.getElementById('rt-' + id)?.classList.toggle('open');
+}
+
+function addResultCard(agent, html) {
+  const a = AGENTS.find(x => x.id === agent.id);
+  const card = document.createElement('div');
+  card.className = 'result-card';
+  card.id = 'rcard-' + agent.id;
+  card.innerHTML = `
+    <div class="result-header" onclick="toggleResult('${agent.id}')">
+      <span class="result-header-icon">${a.icon}</span>
+      <span class="result-title">${a.label}</span>
+      <span class="result-toggle open" id="rt-${agent.id}">▾</span>
+    </div>
+    <div class="result-body open" id="rb-${agent.id}">${html}</div>`;
+  document.getElementById('resultsArea').appendChild(card);
+}
+
+function updateResult(id, html) {
+  const el = document.getElementById('rb-' + id);
+  if (el) el.innerHTML = html;
+}
+
+function buildPrompt(id, city, guests, budget, season) {
+  const base = `Wedding location: ${city}. Guests: ${guests} (venue capacity needed: 120-160). Total budget: ${budget}. Dates: ${season}.`;
+  const prompts = {
+    venue: `${base} You are a wedding venue expert. Recommend 4 realistic wedding venue options within 1.5 hours of Reno, NV — covering Lake Tahoe, Carson Valley (Genoa/Minden/Gardnerville), Truckee/Donner, Reno/Sparks, and Carson City. Exclude Virginia City and Storey County. Venue budget ~$8,750-$10,500. For each venue provide: name, type (barn/vineyard/hotel/estate/etc), estimated rental price range, guest capacity, whether cleanup is INCLUDED by venue or REQUIRED by renter (be explicit), up to 3 key amenities, and a short "why it fits" note. Consider heat for late August dates — note if venue has indoor AC. Return ONLY a JSON array with no markdown: [{"name":"","type":"","price":"","capacity":"","cleanup":"Included by venue OR Required by renter","amenities":[],"fit":""}]`,
+
+    catering: `${base} You are a wedding catering expert. Recommend 4 catering styles for a Reno/Tahoe area wedding: 1) plated dinner, 2) buffet, 3) food truck, 4) cocktail-style heavy appetizers. Catering budget $8,000-$11,000 total. For each: style name, estimated per-head cost, total estimate for ${guests} guests, up to 3 included items (staff/bar/rentals etc), one clear pro, one clear con. Return ONLY a JSON array with no markdown: [{"style":"","perHead":"","total":"","includes":[],"pros":"","cons":""}]`,
+
+    officiant: `${base} You are a wedding planning expert. Recommend 4 officiant options for a Reno/Tahoe Nevada wedding: 1) non-denominational minister, 2) interfaith/spiritual celebrant, 3) friend ordained online (ULC), 4) Nevada county clerk civil ceremony. For each: type, cost range, where/how to find them, up to 3 things they provide (ceremony script/rehearsal/vow writing etc), what type of couple they're best suited for. Return ONLY a JSON array with no markdown: [{"type":"","cost":"","whereTo":"","provides":[],"bestFor":""}]`,
+
+    photography: `${base} You are a wedding photography expert. Photography + video budget $3,500-$5,000. Recommend 4 packages: 1) solo photographer photos only, 2) photographer + second shooter, 3) photographer + videographer package, 4) videography only. For each: package name, typical cost range for Reno/Tahoe area, hours of coverage, up to 3 deliverables (edited gallery/highlight reel/full video/album etc), one practical tip for finding vendors. Return ONLY a JSON array with no markdown: [{"package":"","cost":"","hours":"","deliverables":[],"tip":""}]`,
+
+    music: `${base} You are a wedding entertainment expert. Music/entertainment budget $1,500-$3,500. Recommend 4 options: 1) professional DJ, 2) live band (4-5 piece), 3) acoustic duo for ceremony + cocktail hour, 4) hybrid DJ for reception + live musician for ceremony. For each: option name, typical cost range for Reno/Tahoe area, up to 3 included services (ceremony/cocktail/reception/MC/lighting), one pro, one con, how to find local vendors. Return ONLY a JSON array with no markdown: [{"option":"","cost":"","includes":[],"pros":"","cons":"","howToFind":""}]`,
+
+    checklist: `${base} You are a master wedding planner. Create a prioritized planning checklist for a Reno/Tahoe area wedding with dates in ${season}. Organize into 4 phases: "12+ months out", "6–12 months out", "3–6 months out", "1–3 months out". Each phase should have exactly 4 tasks. Each task: task name, priority (high/medium/low), one short practical tip specific to Reno/Tahoe region. Return ONLY JSON with no markdown: {"phases":[{"name":"","tasks":[{"task":"","priority":"high|medium|low","tip":""}]}]}`
+  };
+  return prompts[id] || '';
+}
+
+function renderVenue(data) {
+  return data.map(v => `<div class="rec-item">
+    <div class="rec-item-name">${v.name}</div>
+    <div class="rec-item-detail">${v.type} · Capacity: ${v.capacity} · <strong>${v.price}</strong></div>
+    <div class="rec-item-note">${v.fit}</div>
+    <div>
+      <span class="tag ${v.cleanup&&v.cleanup.toLowerCase().includes('included')?'tag-green':'tag-amber'}">${v.cleanup||'Check with venue'}</span>
+      ${(v.amenities||[]).map(a=>`<span class="tag tag-purple">${a}</span>`).join('')}
+    </div></div>`).join('');
+}
+
+function renderCatering(data) {
+  return data.map(c => `<div class="rec-item">
+    <div class="rec-item-name">${c.style}</div>
+    <div class="rec-item-detail">${c.perHead}/person · Est. total: <strong>${c.total}</strong></div>
+    <div class="rec-item-note">✓ ${c.pros} &nbsp;·&nbsp; ✗ ${c.cons}</div>
+    <div>${(c.includes||[]).map(i=>`<span class="tag tag-teal">${i}</span>`).join('')}</div>
+  </div>`).join('');
+}
+
+function renderOfficiant(data) {
+  return data.map(o => `<div class="rec-item">
+    <div class="rec-item-name">${o.type}</div>
+    <div class="rec-item-detail">Cost: <strong>${o.cost}</strong> · Best for: ${o.bestFor}</div>
+    <div class="rec-item-note">Find via: ${o.whereTo}</div>
+    <div>${(o.provides||[]).map(p=>`<span class="tag tag-coral">${p}</span>`).join('')}</div>
+  </div>`).join('');
+}
+
+function renderPhotography(data) {
+  return data.map(p => `<div class="rec-item">
+    <div class="rec-item-name">${p.package}</div>
+    <div class="rec-item-detail"><strong>${p.cost}</strong> · ${p.hours} hrs coverage</div>
+    <div class="rec-item-note">${p.tip}</div>
+    <div>${(p.deliverables||[]).map(d=>`<span class="tag tag-blue">${d}</span>`).join('')}</div>
+  </div>`).join('');
+}
+
+function renderMusic(data) {
+  return data.map(m => `<div class="rec-item">
+    <div class="rec-item-name">${m.option}</div>
+    <div class="rec-item-detail"><strong>${m.cost}</strong></div>
+    <div class="rec-item-note">✓ ${m.pros} &nbsp;·&nbsp; ✗ ${m.cons}</div>
+    <div class="rec-item-note" style="color:#999">Find: ${m.howToFind}</div>
+    <div>${(m.includes||[]).map(i=>`<span class="tag tag-amber">${i}</span>`).join('')}</div>
+  </div>`).join('');
+}
+
+function renderChecklist(data) {
+  return (data.phases||[]).map(phase => `
+    <div class="phase-label">${phase.name}</div>
+    ${(phase.tasks||[]).map(t=>`<div class="checklist-item">
+      <div class="ci-dot ${t.priority}"></div>
+      <div class="ci-text">${t.task}<div class="ci-sub">${t.tip}</div></div>
+    </div>`).join('')}`).join('');
+}
+
+const renderers = { venue:renderVenue, catering:renderCatering, officiant:renderOfficiant, photography:renderPhotography, music:renderMusic, checklist:renderChecklist };
+
+async function callClaude(prompt) {
+  const res = await fetch('/api/agent', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, max_tokens: 1000 })
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`API error ${res.status}: ${err}`);
+  }
+  const { text } = await res.json();
+  const clean = text.replace(/```json|```/g, '').trim();
+  return JSON.parse(clean);
+}
+
+async function runAgents() {
+  const city = document.getElementById('city').value;
+  const guests = document.getElementById('guests').value;
+  const budget = document.getElementById('budget').value;
+  const season = document.getElementById('season').value;
+
+  const toRun = AGENTS.filter(a => activeAgents.has(a.id));
+  if (!toRun.length) return;
+
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('runBtn').textContent = 'Running agents…';
+  document.getElementById('resultsArea').innerHTML = '';
+  document.getElementById('progressFill').style.width = '0%';
+
+  let done = 0;
+  for (const agent of toRun) {
+    setStatus(agent.id, 'running', 'Searching…');
+    addResultCard(agent, `<div style="color:#888;font-size:13px;display:flex;align-items:center;gap:8px"><div class="dot pulse" style="color:#534AB7"></div> Agent running…</div>`);
+    try {
+      const result = await callClaude(buildPrompt(agent.id, city, guests, budget, season));
+      const html = renderers[agent.id] ? renderers[agent.id](result) : `<pre style="font-size:11px">${JSON.stringify(result,null,2)}</pre>`;
+      updateResult(agent.id, html);
+      setStatus(agent.id, 'done', 'Complete ✓');
+    } catch(e) {
+      updateResult(agent.id, `<div class="error-box">⚠️ ${e.message}</div>`);
+      setStatus(agent.id, 'error', 'Error');
+    }
+    done++;
+    document.getElementById('progressFill').style.width = Math.round(done/toRun.length*100)+'%';
+  }
+
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('runBtn').textContent = '🔄 Run again';
+}
+</script>
+</body>
+</html>
