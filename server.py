@@ -85,7 +85,7 @@ async def run_agent(req: AgentRequest):
 
     data = res.json()
     text = "".join(b.get("text", "") for b in data.get("content", []))
-    return {"text": text}
+    return {"text": text, "stop_reason": data.get("stop_reason")}
 
 
 if __name__ == "__main__":

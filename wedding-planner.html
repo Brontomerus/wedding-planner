@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Wedding Planner — Agentic Workflow</title>
+<title>Wedding Planner — Reception Planning</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
@@ -67,6 +67,14 @@
   .tag-blue { background: #E6F1FB; color: #185FA5; }
   .tag-teal { background: #E1F5EE; color: #0F6E56; }
 
+  .tier-section { margin-bottom: 1.25rem; }
+  .tier-section:last-child { margin-bottom: 0; }
+  .tier-header { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; }
+  .tier-header.budget { background: #EAF3DE; color: #3B6D11; }
+  .tier-header.mid { background: #FAEEDA; color: #854F0B; }
+  .tier-header.premium { background: #EEEDFE; color: #534AB7; }
+  .tier-desc { font-size: 12px; color: #888; margin: -4px 0 10px 2px; line-height: 1.5; }
+
   .phase-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: #888; margin: 12px 0 6px; }
   .checklist-item { display: flex; align-items: flex-start; gap: 9px; padding: 7px 0; border-bottom: 0.5px solid #eee; font-size: 13px; }
   .checklist-item:last-child { border-bottom: none; }
@@ -89,23 +97,23 @@
 <div class="container">
 
   <div class="hero">
-    <h1>💍 Wedding planner</h1>
-    <p>AI agents search venues, catering, officiants & more — tailored to your budget</p>
+    <h1>🥂 Reception planner</h1>
+    <p>Ceremony is handled separately — these agents focus on finding and comparing reception venues, vendors & logistics</p>
   </div>
 
   <div class="card">
-    <div class="section-label">Wedding details</div>
+    <div class="section-label">Reception details</div>
     <div class="config-grid">
       <div class="config-field">
         <label>Search area</label>
         <input type="text" id="city" value="Reno, NV — Tahoe, Carson Valley, Truckee (no Virginia City)" />
       </div>
       <div class="config-field">
-        <label>Guest count</label>
+        <label>Reception guest count</label>
         <input type="number" id="guests" value="140" min="50" max="500" />
       </div>
       <div class="config-field">
-        <label>Total budget</label>
+        <label>Reception budget</label>
         <input type="text" id="budget" value="$35,000" />
       </div>
       <div class="config-field">
@@ -119,37 +127,31 @@
       <div class="agent-card active" data-agent="venue" onclick="toggleAgent(this)">
         <div class="agent-icon">🏛️</div>
         <div class="agent-name">Venue finder</div>
-        <div class="agent-desc">120–160 guests, cleanup policy, budget fit</div>
+        <div class="agent-desc">3 pricing tiers — space-only, mid-range & full-service</div>
         <div class="agent-status" id="status-venue"><div class="dot"></div> Ready</div>
       </div>
       <div class="agent-card active" data-agent="catering" onclick="toggleAgent(this)">
         <div class="agent-icon">🍽️</div>
         <div class="agent-name">Catering</div>
-        <div class="agent-desc">Full service, buffet & cocktail options</div>
+        <div class="agent-desc">Options matched to each venue tier</div>
         <div class="agent-status" id="status-catering"><div class="dot"></div> Ready</div>
-      </div>
-      <div class="agent-card active" data-agent="officiant" onclick="toggleAgent(this)">
-        <div class="agent-icon">💒</div>
-        <div class="agent-name">Officiant</div>
-        <div class="agent-desc">Ministers, celebrants & civil options</div>
-        <div class="agent-status" id="status-officiant"><div class="dot"></div> Ready</div>
       </div>
       <div class="agent-card active" data-agent="photography" onclick="toggleAgent(this)">
         <div class="agent-icon">📷</div>
         <div class="agent-name">Photography</div>
-        <div class="agent-desc">Photographers & videographers</div>
+        <div class="agent-desc">Reception photographers & videographers</div>
         <div class="agent-status" id="status-photography"><div class="dot"></div> Ready</div>
       </div>
       <div class="agent-card active" data-agent="music" onclick="toggleAgent(this)">
         <div class="agent-icon">🎵</div>
         <div class="agent-name">Music & DJ</div>
-        <div class="agent-desc">Live bands, DJs & ceremony musicians</div>
+        <div class="agent-desc">Reception DJs, bands & MC services</div>
         <div class="agent-status" id="status-music"><div class="dot"></div> Ready</div>
       </div>
       <div class="agent-card active" data-agent="checklist" onclick="toggleAgent(this)">
         <div class="agent-icon">✅</div>
-        <div class="agent-name">Master checklist</div>
-        <div class="agent-desc">Prioritized timeline from all agents</div>
+        <div class="agent-name">Reception checklist</div>
+        <div class="agent-desc">Prioritized timeline for reception planning</div>
         <div class="agent-status" id="status-checklist"><div class="dot"></div> Ready</div>
       </div>
     </div>
@@ -163,14 +165,13 @@
 <script>
 const AGENTS = [
   { id: 'venue', label: 'Venue finder', icon: '🏛️' },
-  { id: 'catering', label: 'Catering', icon: '🍽️' },
-  { id: 'officiant', label: 'Officiant', icon: '💒' },
+  { id: 'catering', label: 'Catering', icon: '🍽️', maxTokens: 3000 },
   { id: 'photography', label: 'Photography', icon: '📷' },
   { id: 'music', label: 'Music & DJ', icon: '🎵' },
-  { id: 'checklist', label: 'Master checklist', icon: '✅' },
+  { id: 'checklist', label: 'Reception checklist', icon: '✅', maxTokens: 2000 },
 ];
 
-let activeAgents = new Set(['venue','catering','officiant','photography','music','checklist']);
+let activeAgents = new Set(['venue','catering','photography','music','checklist']);
 
 function toggleAgent(el) {
   const id = el.dataset.agent;
@@ -210,51 +211,111 @@ function updateResult(id, html) {
   if (el) el.innerHTML = html;
 }
 
+const VENUE_TIERS = {
+  budget: {
+    name: 'Budget · space rental only',
+    description: '~$2,500–$6,000 venue fee. Rent the space only — you bring catering, tables, linens, bar, and coordination.',
+    spec: 'Raw event spaces with strong reviews but minimal services: barns, community halls, park pavilions, bare warehouses. Rent space only; couple hires everything else.',
+  },
+  mid: {
+    name: 'Mid-range · venue + basics',
+    description: '~$6,000–$12,000 flat fee or ~$50–$90/head. Tables/chairs and basic setup included; catering often separate.',
+    spec: 'Venues with tables/chairs, basic setup, maybe bar area or preferred caterer list, some on-site coordination.',
+  },
+  premium: {
+    name: 'Premium · full-service',
+    description: '~$100–$175+/head or $15,000+ packages. Restaurants, wineries, hotels — catering, bar, linens, and coordination bundled.',
+    spec: 'Restaurants, winery estates, hotel banquet rooms, country clubs with in-house catering, bar, linens, china, and coordination.',
+  },
+};
+
+function receptionBase(city, guests, budget, season) {
+  return `Reception-only (ceremony elsewhere — no ceremony venues). Location: ${city}. Guests: ${guests} (capacity 120-160). Budget: ${budget}. Dates: ${season}. Area: within 1.5h of Reno — Tahoe, Carson Valley, Truckee, Reno/Sparks, Carson City. Exclude Virginia City.`;
+}
+
+function buildVenueTierPrompt(tierId, city, guests, budget, season) {
+  const tier = VENUE_TIERS[tierId];
+  return `${receptionBase(city, guests, budget, season)} You are a wedding reception venue expert.
+
+Recommend exactly 3 real or realistic ${tier.name} venues for this tier: ${tier.spec}
+
+For each venue keep every string under 100 characters, no quotes inside strings, no newlines in strings.
+Fields: name, type, price, capacity, included, notIncluded (array, max 3), reviews (short rating note), cleanup, amenities (max 3), fit (one sentence).
+
+Return ONLY compact JSON, no markdown:
+{"id":"${tierId}","name":"${tier.name}","description":"${tier.description}","venues":[{"name":"","type":"","price":"","capacity":"","included":"","notIncluded":[],"reviews":"","cleanup":"","amenities":[],"fit":""}]}`;
+}
+
 function buildPrompt(id, city, guests, budget, season) {
-  const base = `Wedding location: ${city}. Guests: ${guests} (venue capacity needed: 120-160). Total budget: ${budget}. Dates: ${season}.`;
+  const base = receptionBase(city, guests, budget, season);
   const prompts = {
-    venue: `${base} You are a wedding venue expert. Recommend 4 realistic wedding venue options within 1.5 hours of Reno, NV — covering Lake Tahoe, Carson Valley (Genoa/Minden/Gardnerville), Truckee/Donner, Reno/Sparks, and Carson City. Exclude Virginia City and Storey County. Venue budget ~$8,750-$10,500. For each venue provide: name, type (barn/vineyard/hotel/estate/etc), estimated rental price range, guest capacity, whether cleanup is INCLUDED by venue or REQUIRED by renter (be explicit), up to 3 key amenities, and a short "why it fits" note. Consider heat for late August dates — note if venue has indoor AC. Return ONLY a JSON array with no markdown: [{"name":"","type":"","price":"","capacity":"","cleanup":"Included by venue OR Required by renter","amenities":[],"fit":""}]`,
+    catering: `${base} You are a wedding catering expert for RECEPTIONS only. Recommend catering approaches organized into 3 tiers that pair with typical venue tiers:
 
-    catering: `${base} You are a wedding catering expert. Recommend 4 catering styles for a Reno/Tahoe area wedding: 1) plated dinner, 2) buffet, 3) food truck, 4) cocktail-style heavy appetizers. Catering budget $8,000-$11,000 total. For each: style name, estimated per-head cost, total estimate for ${guests} guests, up to 3 included items (staff/bar/rentals etc), one clear pro, one clear con. Return ONLY a JSON array with no markdown: [{"style":"","perHead":"","total":"","includes":[],"pros":"","cons":""}]`,
+TIER 1 — Budget venues (space-only): 3 options — e.g. independent caterer drop-off, food trucks, DIY/budget buffet. Estimate costs for ${guests} guests.
 
-    officiant: `${base} You are a wedding planning expert. Recommend 4 officiant options for a Reno/Tahoe Nevada wedding: 1) non-denominational minister, 2) interfaith/spiritual celebrant, 3) friend ordained online (ULC), 4) Nevada county clerk civil ceremony. For each: type, cost range, where/how to find them, up to 3 things they provide (ceremony script/rehearsal/vow writing etc), what type of couple they're best suited for. Return ONLY a JSON array with no markdown: [{"type":"","cost":"","whereTo":"","provides":[],"bestFor":""}]`,
+TIER 2 — Mid-range venues: 3 options — buffet, plated dinner, or cocktail reception from regional caterers. Estimate per-head and total for ${guests} guests.
 
-    photography: `${base} You are a wedding photography expert. Photography + video budget $3,500-$5,000. Recommend 4 packages: 1) solo photographer photos only, 2) photographer + second shooter, 3) photographer + videographer package, 4) videography only. For each: package name, typical cost range for Reno/Tahoe area, hours of coverage, up to 3 deliverables (edited gallery/highlight reel/full video/album etc), one practical tip for finding vendors. Return ONLY a JSON array with no markdown: [{"package":"","cost":"","hours":"","deliverables":[],"tip":""}]`,
+TIER 3 — Premium venues (restaurants/full-service): 3 options — in-house restaurant packages, winery catering, hotel banquet menus. Note what's typically bundled vs add-on.
 
-    music: `${base} You are a wedding entertainment expert. Music/entertainment budget $1,500-$3,500. Recommend 4 options: 1) professional DJ, 2) live band (4-5 piece), 3) acoustic duo for ceremony + cocktail hour, 4) hybrid DJ for reception + live musician for ceremony. For each: option name, typical cost range for Reno/Tahoe area, up to 3 included services (ceremony/cocktail/reception/MC/lighting), one pro, one con, how to find local vendors. Return ONLY a JSON array with no markdown: [{"option":"","cost":"","includes":[],"pros":"","cons":"","howToFind":""}]`,
+For each option: tier id (budget|mid|premium), style name, per-head cost, total estimate, what's included, one pro, one con, best paired venue type. Keep strings under 100 characters.
 
-    checklist: `${base} You are a master wedding planner. Create a prioritized planning checklist for a Reno/Tahoe area wedding with dates in ${season}. Organize into 4 phases: "12+ months out", "6–12 months out", "3–6 months out", "1–3 months out". Each phase should have exactly 4 tasks. Each task: task name, priority (high/medium/low), one short practical tip specific to Reno/Tahoe region. Return ONLY JSON with no markdown: {"phases":[{"name":"","tasks":[{"task":"","priority":"high|medium|low","tip":""}]}]}`
+Return ONLY compact JSON, no markdown: {"tiers":[{"id":"budget|mid|premium","name":"","options":[{"style":"","perHead":"","total":"","includes":[],"pros":"","cons":"","pairsWith":""}]}]}`,
+
+    photography: `${base} You are a wedding photography expert focused on RECEPTION coverage only (no ceremony). Photography + video budget $3,500-$5,000. Recommend 4 packages: 1) reception-only photographer, 2) photographer + second shooter for reception, 3) photographer + videographer reception package, 4) videography reception highlight reel only. For each: package name, typical cost range for Reno/Tahoe, hours of reception coverage, up to 3 deliverables, one practical tip. Return ONLY a JSON array with no markdown: [{"package":"","cost":"","hours":"","deliverables":[],"tip":""}]`,
+
+    music: `${base} You are a wedding entertainment expert for RECEPTIONS only (no ceremony musicians). Music budget $1,500-$3,500. Recommend 4 options: 1) professional DJ with MC, 2) live band (4-5 piece) for reception, 3) DJ + live sax or violin for cocktail hour into DJ reception, 4) acoustic trio for dinner + DJ for dancing. For each: option name, cost range, reception services included, one pro, one con, how to find local vendors. Return ONLY a JSON array with no markdown: [{"option":"","cost":"","includes":[],"pros":"","cons":"","howToFind":""}]`,
+
+    checklist: `${base} You are a master wedding planner. Create a reception-only planning checklist (ceremony already handled separately). Dates in ${season}. Organize into 4 phases: "12+ months out", "6–12 months out", "3–6 months out", "1–3 months out". Each phase exactly 4 tasks focused on reception logistics (venue tier decision, catering, rentals, bar, music, photography, timeline). Each task: name, priority (high/medium/low), short Reno/Tahoe tip. Return ONLY JSON with no markdown: {"phases":[{"name":"","tasks":[{"task":"","priority":"high|medium|low","tip":""}]}]}`
   };
   return prompts[id] || '';
 }
 
-function renderVenue(data) {
-  return data.map(v => `<div class="rec-item">
+const TIER_CLASS = { budget: 'budget', mid: 'mid', premium: 'premium' };
+
+function renderVenueCard(v) {
+  return `<div class="rec-item">
     <div class="rec-item-name">${v.name}</div>
     <div class="rec-item-detail">${v.type} · Capacity: ${v.capacity} · <strong>${v.price}</strong></div>
+    ${v.reviews ? `<div class="rec-item-note">${v.reviews}</div>` : ''}
     <div class="rec-item-note">${v.fit}</div>
     <div>
-      <span class="tag ${v.cleanup&&v.cleanup.toLowerCase().includes('included')?'tag-green':'tag-amber'}">${v.cleanup||'Check with venue'}</span>
+      <span class="tag tag-green">${v.included || 'Space rental'}</span>
+      <span class="tag ${v.cleanup&&v.cleanup.toLowerCase().includes('included')?'tag-teal':'tag-amber'}">${v.cleanup||'Check cleanup policy'}</span>
+      ${(v.notIncluded||[]).map(i=>`<span class="tag tag-coral">+ ${i}</span>`).join('')}
       ${(v.amenities||[]).map(a=>`<span class="tag tag-purple">${a}</span>`).join('')}
-    </div></div>`).join('');
+    </div></div>`;
+}
+
+function renderVenue(data) {
+  if (data.tiers) {
+    return data.tiers.map(tier => `
+      <div class="tier-section">
+        <div class="tier-header ${TIER_CLASS[tier.id]||'mid'}">${tier.name}</div>
+        ${tier.description ? `<div class="tier-desc">${tier.description}</div>` : ''}
+        ${(tier.venues||[]).map(renderVenueCard).join('')}
+      </div>`).join('');
+  }
+  return (Array.isArray(data) ? data : []).map(renderVenueCard).join('');
+}
+
+function renderCateringOption(c) {
+  return `<div class="rec-item">
+    <div class="rec-item-name">${c.style}</div>
+    <div class="rec-item-detail">${c.perHead}/person · Est. total: <strong>${c.total}</strong></div>
+    <div class="rec-item-note">Pairs with: ${c.pairsWith||'—'} · ✓ ${c.pros} · ✗ ${c.cons}</div>
+    <div>${(c.includes||[]).map(i=>`<span class="tag tag-teal">${i}</span>`).join('')}</div>
+  </div>`;
 }
 
 function renderCatering(data) {
-  return data.map(c => `<div class="rec-item">
-    <div class="rec-item-name">${c.style}</div>
-    <div class="rec-item-detail">${c.perHead}/person · Est. total: <strong>${c.total}</strong></div>
-    <div class="rec-item-note">✓ ${c.pros} &nbsp;·&nbsp; ✗ ${c.cons}</div>
-    <div>${(c.includes||[]).map(i=>`<span class="tag tag-teal">${i}</span>`).join('')}</div>
-  </div>`).join('');
-}
-
-function renderOfficiant(data) {
-  return data.map(o => `<div class="rec-item">
-    <div class="rec-item-name">${o.type}</div>
-    <div class="rec-item-detail">Cost: <strong>${o.cost}</strong> · Best for: ${o.bestFor}</div>
-    <div class="rec-item-note">Find via: ${o.whereTo}</div>
-    <div>${(o.provides||[]).map(p=>`<span class="tag tag-coral">${p}</span>`).join('')}</div>
-  </div>`).join('');
+  if (data.tiers) {
+    return data.tiers.map(tier => `
+      <div class="tier-section">
+        <div class="tier-header ${TIER_CLASS[tier.id]||'mid'}">${tier.name}</div>
+        ${(tier.options||[]).map(renderCateringOption).join('')}
+      </div>`).join('');
+  }
+  return (Array.isArray(data) ? data : []).map(renderCateringOption).join('');
 }
 
 function renderPhotography(data) {
@@ -285,21 +346,77 @@ function renderChecklist(data) {
     </div>`).join('')}`).join('');
 }
 
-const renderers = { venue:renderVenue, catering:renderCatering, officiant:renderOfficiant, photography:renderPhotography, music:renderMusic, checklist:renderChecklist };
+const renderers = { venue:renderVenue, catering:renderCatering, photography:renderPhotography, music:renderMusic, checklist:renderChecklist };
 
-async function callClaude(prompt) {
+function extractJsonText(text) {
+  let clean = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+  const objStart = clean.indexOf('{');
+  const arrStart = clean.indexOf('[');
+  if (objStart === -1 && arrStart === -1) throw new Error('No JSON found in response');
+  const start = objStart === -1 ? arrStart : (arrStart === -1 ? objStart : Math.min(objStart, arrStart));
+  return clean.slice(start);
+}
+
+function repairTruncatedJson(raw) {
+  let s = raw.replace(/,\s*"[^"]*$/, '').replace(/,\s*$/, '');
+  const stack = [];
+  let inString = false, escape = false;
+  for (const ch of s) {
+    if (inString) {
+      if (escape) { escape = false; continue; }
+      if (ch === '\\') { escape = true; continue; }
+      if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') { inString = true; continue; }
+    if (ch === '{' || ch === '[') stack.push(ch);
+    if (ch === '}' || ch === ']') stack.pop();
+  }
+  if (inString) s += '"';
+  while (stack.length) {
+    const open = stack.pop();
+    s += open === '{' ? '}' : ']';
+  }
+  return s;
+}
+
+function parseAgentJson(text, stopReason) {
+  const raw = extractJsonText(text);
+  try {
+    return JSON.parse(raw);
+  } catch (firstErr) {
+    if (stopReason === 'max_tokens') {
+      try {
+        return JSON.parse(repairTruncatedJson(raw));
+      } catch (_) {
+        throw new Error('Response was cut off before finishing. Partial results could not be recovered — try running again.');
+      }
+    }
+    throw new Error(`Invalid JSON: ${firstErr.message}`);
+  }
+}
+
+async function callClaude(prompt, maxTokens = 1500) {
   const res = await fetch('/api/agent', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, max_tokens: 1000 })
+    body: JSON.stringify({ prompt, max_tokens: maxTokens })
   });
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`API error ${res.status}: ${err}`);
   }
-  const { text } = await res.json();
-  const clean = text.replace(/```json|```/g, '').trim();
-  return JSON.parse(clean);
+  const { text, stop_reason: stopReason } = await res.json();
+  return parseAgentJson(text, stopReason);
+}
+
+async function callVenueAgent(city, guests, budget, season) {
+  const tierIds = ['budget', 'mid', 'premium'];
+  const tiers = await Promise.all(tierIds.map(async (tierId) => {
+    const prompt = buildVenueTierPrompt(tierId, city, guests, budget, season);
+    return callClaude(prompt, 1500);
+  }));
+  return { tiers };
 }
 
 async function runAgents() {
@@ -321,7 +438,9 @@ async function runAgents() {
     setStatus(agent.id, 'running', 'Searching…');
     addResultCard(agent, `<div style="color:#888;font-size:13px;display:flex;align-items:center;gap:8px"><div class="dot pulse" style="color:#534AB7"></div> Agent running…</div>`);
     try {
-      const result = await callClaude(buildPrompt(agent.id, city, guests, budget, season));
+      const result = agent.id === 'venue'
+        ? await callVenueAgent(city, guests, budget, season)
+        : await callClaude(buildPrompt(agent.id, city, guests, budget, season), agent.maxTokens || 1500);
       const html = renderers[agent.id] ? renderers[agent.id](result) : `<pre style="font-size:11px">${JSON.stringify(result,null,2)}</pre>`;
       updateResult(agent.id, html);
       setStatus(agent.id, 'done', 'Complete ✓');
